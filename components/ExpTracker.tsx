@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { CharacterType, ExpRecord } from '../types';
 import { calculateExpDifference } from '../services/expService';
-import { Save, Trash2, TrendingUp, Info, Calculator, Filter, Search, XCircle } from 'lucide-react';
+import { Save, Trash2, TrendingUp, Info, Calculator, Filter, Search, XCircle, AlertCircle, Map as MapIcon, BarChart3 } from 'lucide-react';
 
 export const ExpTracker: React.FC = () => {
-  // State
-  const [charType, setCharType] = useState<CharacterType>(CharacterType.THIRD_CLASS_PLUS);
+  // State with Lazy Initialization for Persistence
+  const [charType, setCharType] = useState<CharacterType>(CharacterType.NORMAL_POST_TRANS);
   const [mapName, setMapName] = useState('');
   
   const [startLv, setStartLv] = useState<number>(200);
@@ -22,7 +22,16 @@ export const ExpTracker: React.FC = () => {
   const [manualBook, setManualBook] = useState<number>(0); // 0, 50, 100, 200
   const [isDaiDai, setIsDaiDai] = useState<boolean>(false);
 
-  const [records, setRecords] = useState<ExpRecord[]>([]);
+  // Lazy init to prevent overwriting with empty array on re-render
+  const [records, setRecords] = useState<ExpRecord[]>(() => {
+    try {
+        const saved = localStorage.getItem('ro_exp_records');
+        return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+        console.error("Failed to load records", e);
+        return [];
+    }
+  });
 
   // Filter State
   const [filterMap, setFilterMap] = useState('');
@@ -33,18 +42,18 @@ export const ExpTracker: React.FC = () => {
   const [calculatedGained, setCalculatedGained] = useState<number>(0);
   const [calculatedBasePerHour, setCalculatedBasePerHour] = useState<number>(0);
 
-  // Load records from local storage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem('ro_exp_records');
-    if (saved) {
-      setRecords(JSON.parse(saved));
-    }
-  }, []);
-
-  // Save records when updated
+  // Auto-save whenever records change
   useEffect(() => {
     localStorage.setItem('ro_exp_records', JSON.stringify(records));
   }, [records]);
+
+  // Handle Character Type Change and Level Constraints
+  useEffect(() => {
+    if (charType === CharacterType.NORMAL_PRE_TRANS) {
+        if (startLv > 99) setStartLv(99);
+        if (endLv > 99) setEndLv(99);
+    }
+  }, [charType, startLv, endLv]);
 
   // Real-time Calculation
   useEffect(() => {
@@ -80,11 +89,11 @@ export const ExpTracker: React.FC = () => {
       expPerHour: calculatedBasePerHour
     };
 
-    setRecords([newRecord, ...records]);
+    setRecords(prev => [newRecord, ...prev]);
   };
 
   const handleDelete = (id: string) => {
-    setRecords(records.filter(r => r.id !== id));
+    setRecords(prev => prev.filter(r => r.id !== id));
   };
 
   const formatNumber = (num: number) => {
@@ -100,6 +109,32 @@ export const ExpTracker: React.FC = () => {
     });
   }, [records, filterMap, filterManual, filterDaiDai]);
 
+  // Map Statistics Logic
+  const mapStatistics = useMemo(() => {
+      const stats: Record<string, { totalExp: number; count: number }> = {};
+      
+      records.forEach(record => {
+          const name = record.mapName;
+          if (!stats[name]) {
+              stats[name] = { totalExp: 0, count: 0 };
+          }
+          stats[name].totalExp += record.expPerHour;
+          stats[name].count += 1;
+      });
+
+      return Object.entries(stats)
+          .map(([name, data]) => ({
+              name,
+              avgExp: data.totalExp / data.count,
+              count: data.count
+          }))
+          .sort((a, b) => b.avgExp - a.avgExp); // Sort by highest exp first
+  }, [records]);
+
+  const getMaxLevel = () => {
+      return charType === CharacterType.NORMAL_PRE_TRANS ? 99 : 260;
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="bg-ro-primary rounded-xl p-6 shadow-xl border border-ro-secondary">
@@ -113,7 +148,7 @@ export const ExpTracker: React.FC = () => {
           <div className="space-y-6">
              {/* Character Type */}
             <div>
-                <label className="block text-sm font-medium text-ro-muted mb-2">職業類型 (影響經驗表)</label>
+                <label className="block text-sm font-medium text-ro-muted mb-2">職業類型 (影響經驗表上限)</label>
                 <select 
                     value={charType}
                     onChange={(e) => setCharType(e.target.value as CharacterType)}
@@ -123,6 +158,12 @@ export const ExpTracker: React.FC = () => {
                         <option key={type} value={type}>{type}</option>
                     ))}
                 </select>
+                {charType === CharacterType.NORMAL_PRE_TRANS && (
+                    <div className="mt-2 text-xs text-orange-400 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        轉生前職業最高等級限制為 99
+                    </div>
+                )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -130,9 +171,11 @@ export const ExpTracker: React.FC = () => {
                 <label className="block text-sm font-medium text-ro-muted mb-2">開始等級</label>
                 <div className="flex space-x-2">
                   <input 
-                    type="number" 
+                    type="number"
+                    min="1"
+                    max={getMaxLevel()}
                     value={startLv}
-                    onChange={(e) => setStartLv(parseInt(e.target.value) || 0)}
+                    onChange={(e) => setStartLv(Math.min(getMaxLevel(), Math.max(1, parseInt(e.target.value) || 0)))}
                     className="w-full bg-slate-800 border border-ro-secondary rounded-lg px-3 py-2 text-white"
                   />
                   <input 
@@ -152,8 +195,10 @@ export const ExpTracker: React.FC = () => {
                 <div className="flex space-x-2">
                   <input 
                     type="number" 
+                    min="1"
+                    max={getMaxLevel()}
                     value={endLv}
-                    onChange={(e) => setEndLv(parseInt(e.target.value) || 0)}
+                    onChange={(e) => setEndLv(Math.min(getMaxLevel(), Math.max(1, parseInt(e.target.value) || 0)))}
                     className="w-full bg-slate-800 border border-ro-secondary rounded-lg px-3 py-2 text-white"
                   />
                   <input 
@@ -281,6 +326,47 @@ export const ExpTracker: React.FC = () => {
              </div>
           </div>
         </div>
+      </div>
+
+      {/* Map Statistics Section */}
+      <div className="bg-ro-primary rounded-xl p-6 shadow-xl border border-ro-secondary">
+          <div className="flex items-center space-x-2 mb-6">
+              <BarChart3 className="w-5 h-5 text-ro-highlight" />
+              <h3 className="text-xl font-bold text-white">地圖效率統計</h3>
+              <span className="text-xs text-ro-muted">(平均時薪)</span>
+          </div>
+
+          {mapStatistics.length === 0 ? (
+               <div className="p-8 text-center text-ro-muted bg-slate-900/50 rounded-lg border border-slate-800">
+                  <MapIcon className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                  <p>尚無數據，請先新增練功紀錄</p>
+               </div>
+          ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {mapStatistics.map((stat, index) => (
+                      <div key={stat.name} className="bg-slate-800 p-4 rounded-lg border border-ro-secondary flex flex-col shadow-lg">
+                          <div className="flex justify-between items-start mb-2">
+                              <h4 className="font-bold text-white text-lg truncate pr-2" title={stat.name}>
+                                  {stat.name}
+                              </h4>
+                              {index === 0 && <span className="bg-ro-gold text-black text-xs font-bold px-2 py-0.5 rounded-full">TOP 1</span>}
+                          </div>
+                          
+                          <div className="flex-1 flex flex-col justify-end">
+                              <div className="text-2xl font-mono font-bold text-ro-highlight">
+                                  {formatNumber(stat.avgExp)}
+                              </div>
+                              <div className="flex justify-between items-end mt-1">
+                                  <span className="text-xs text-ro-muted">Exp / 60mins</span>
+                                  <span className="text-xs text-slate-500 bg-slate-900 px-2 py-0.5 rounded">
+                                      {stat.count} 筆紀錄
+                                  </span>
+                              </div>
+                          </div>
+                      </div>
+                  ))}
+              </div>
+          )}
       </div>
 
       {/* History Table & Filter */}

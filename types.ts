@@ -37,10 +37,9 @@ export interface ExpRecord {
 }
 
 export enum CharacterType {
-  NORMAL_PRE_TRANS = '一般職業 (轉生前)',
-  NORMAL_POST_TRANS = '一般職業 (轉生後)',
-  DORAM = '喵族',
-  THIRD_CLASS_PLUS = '三轉/四轉 (Lv100+)'
+  NORMAL_PRE_TRANS = '一般職業 (轉生前 1-99)',
+  NORMAL_POST_TRANS = '進階/三轉/四轉 (轉生後 1-260)',
+  DORAM = '喵族 (1-260)'
 }
 
 export interface LevelData {
