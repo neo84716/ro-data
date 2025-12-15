@@ -8,53 +8,45 @@ import {
 import { CharacterType, LevelData } from '../types';
 
 /**
- * Finds the required EXP for a specific level based on character type.
+ * Finds the required EXP to level up FROM the current level TO the next level.
+ * @param currentLevel The character's current level
+ * @param type Character type
  */
-export const getRequiredExp = (level: number, type: CharacterType): number | null => {
-  // 1. Handle Pre-Trans Cap (Max 99)
-  if (type === CharacterType.NORMAL_PRE_TRANS && level >= 99) {
-      return null; // Cannot level up beyond 99 as Pre-Trans
+export const getRequiredExp = (currentLevel: number, type: CharacterType): number | null => {
+  const maxLevel = type === CharacterType.NORMAL_PRE_TRANS ? 99 : 260;
+  
+  if (currentLevel >= maxLevel) {
+      return null; // Already at max level, no next level requirement
   }
 
-  // 2. Handle Levels 200+ (Universal for Post-Trans and Doram/Spirit Handler)
-  if (level >= 201) {
-     if (type === CharacterType.NORMAL_PRE_TRANS) return null;
-     const data = EXP_TABLE_200_PLUS.find(d => d.level === level);
-     return data ? data.requiredExp : null;
-  }
-
-  // 3. Handle Levels 100-200
-  if (level >= 100) {
-    if (type === CharacterType.NORMAL_PRE_TRANS) return null; // Pre-trans cap check again
-
-    if (type === CharacterType.DORAM) {
-        // Doram specific table for 100-200
-        const data = EXP_TABLE_DORAM.find(d => d.level === level);
-        // Fallback to standard 100-200 if Doram table ends early (though constants show it goes to 200)
-        return data ? data.requiredExp : EXP_TABLE_100_200.find(d => d.level === level)?.requiredExp || null;
-    }
-    // Standard Post-Trans classes use the general 100-200 table
-    const data = EXP_TABLE_100_200.find(d => d.level === level);
-    return data ? data.requiredExp : null;
-  }
-
-  // 4. Handle Levels < 100
+  const targetLevel = currentLevel + 1;
   let table: LevelData[] = [];
-  switch (type) {
-    case CharacterType.DORAM:
-      table = EXP_TABLE_DORAM;
-      break;
-    case CharacterType.NORMAL_PRE_TRANS:
+
+  // Determine which table to use based on Character Type and Level Range
+  if (type === CharacterType.DORAM) {
+      // Doram uses its specific table up to 200, then shares the 200+ table
+      if (targetLevel > 200) {
+          table = EXP_TABLE_200_PLUS;
+      } else {
+          table = EXP_TABLE_DORAM;
+      }
+  } else if (type === CharacterType.NORMAL_PRE_TRANS) {
+      // Pre-Trans is capped at 99, always uses pre-trans table
       table = EXP_TABLE_PRE_TRANS;
-      break;
-    case CharacterType.NORMAL_POST_TRANS:
-      table = EXP_TABLE_POST_TRANS;
-      break;
-    default:
-      table = EXP_TABLE_PRE_TRANS;
+  } else {
+      // Normal Post-Trans / 3rd / 4th Classes
+      if (targetLevel >= 201) {
+          table = EXP_TABLE_200_PLUS;
+      } else if (targetLevel >= 100) {
+          table = EXP_TABLE_100_200;
+      } else {
+          table = EXP_TABLE_POST_TRANS;
+      }
   }
 
-  const data = table.find(d => d.level === level);
+  // Find the specific level data
+  const data = table.find(d => d.level === targetLevel);
+  
   return data ? data.requiredExp : null;
 };
 
@@ -64,10 +56,11 @@ export const getRequiredExp = (level: number, type: CharacterType): number | nul
 export const calculateAccumulatedExp = (level: number, percent: number, type: CharacterType): number => {
   let total = 0;
   
-  // Cap check for calculation loop
   const maxLevel = type === CharacterType.NORMAL_PRE_TRANS ? 99 : 260;
   const targetLevel = Math.min(level, maxLevel);
 
+  // Sum up all required exp for previous levels
+  // e.g. Level 200 means we need sum of exp to reach 2 (from 1) ... to 200 (from 199)
   for (let l = 1; l < targetLevel; l++) {
       const req = getRequiredExp(l, type);
       if (req) {
@@ -76,8 +69,6 @@ export const calculateAccumulatedExp = (level: number, percent: number, type: Ch
   }
 
   // Add percentage of current level
-  // If we are at the absolute max level (e.g. 99 for pre-trans), percentage might not matter for "next level",
-  // but usually in trackers we want to know how much EXP we have *into* the current level.
   const currentLevelReq = getRequiredExp(targetLevel, type);
   if (currentLevelReq) {
       total += currentLevelReq * (percent / 100);
@@ -94,4 +85,52 @@ export const calculateExpDifference = (
     const startTotal = calculateAccumulatedExp(startLv, startPct, type);
     const endTotal = calculateAccumulatedExp(endLv, endPct, type);
     return Math.max(0, endTotal - startTotal);
+};
+
+export const calculateFinalLevel = (
+    startLv: number, 
+    startPct: number, 
+    gainedExp: number, 
+    type: CharacterType
+): { level: number, percent: number } => {
+    const maxLevel = type === CharacterType.NORMAL_PRE_TRANS ? 99 : 260;
+    
+    // 1. Get current accumulated Exp
+    const currentTotalExp = calculateAccumulatedExp(startLv, startPct, type);
+    
+    // 2. Add gained Exp
+    let newTotalExp = currentTotalExp + gainedExp;
+    
+    // 3. Reverse calculation: Simulate leveling up from Lv1
+    let currentLv = 1;
+    
+    while (currentLv < maxLevel) {
+        const req = getRequiredExp(currentLv, type);
+        
+        // If we can't find exp data, stop to avoid infinite loops or errors
+        if (!req) break;
+        
+        if (newTotalExp >= req) {
+            newTotalExp -= req;
+            currentLv++;
+        } else {
+            // Not enough exp to reach next level
+            break; 
+        }
+    }
+    
+    // Calculate remaining percentage
+    let finalPercent = 0;
+    const finalLevelReq = getRequiredExp(currentLv, type);
+    
+    if (finalLevelReq && finalLevelReq > 0) {
+        finalPercent = (newTotalExp / finalLevelReq) * 100;
+    } else {
+        finalPercent = 0;
+    }
+    
+    return {
+        level: currentLv,
+        percent: Math.min(100, Math.max(0, finalPercent))
+    };
 };

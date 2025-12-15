@@ -3,8 +3,10 @@ import { LevelData, EnchantSlot } from './types';
 // Helper to create array from raw copy-pasted number lists if needed, 
 // but here we will implement the provided data directly.
 
-// ... [Existing EXP Tables remain unchanged - abbreviated for XML length limits, assume previous EXP tables exist here] ...
-// Table: 100 - 200
+// ... [Previous tables omitted for brevity, assuming they are correct as per user context] ...
+// Re-exporting previous tables as placeholder to maintain file integrity in this context, 
+// but in real implementation ensuring 200+ is accurate is priority.
+
 export const EXP_TABLE_100_200: LevelData[] = [
   { level: 100, requiredExp: 1272747 },
   { level: 101, requiredExp: 1354202 },
@@ -576,7 +578,6 @@ export const EXP_TABLE_POST_TRANS: LevelData[] = [
     { level: 99, requiredExp: 1258714 },
 ];
 
-// Enchant Tables for LT Armors
 export const LT_ARMOR_ENCHANTS: EnchantSlot[] = [
     {
         slotId: 4,
@@ -679,4 +680,58 @@ export const LT_ARMOR_ENCHANTS: EnchantSlot[] = [
             { name: "智慧星團3Lv", probability: 0.4, isRare: true },
         ]
     }
+];
+
+// --- QUEST DATA ---
+export const QUEST_LIST = [
+    // 130 Zone (Eden)
+    { id: '130-1', minLv: 130, name: '開枝散葉的大地', baseExp: 2084976, type: 'EDEN' },
+    { id: '130-2', minLv: 130, name: '冥想大浴池', baseExp: 2327016, type: 'EDEN' },
+    { id: '130-3', minLv: 130, name: '圖書館記憶迴廊', baseExp: 3401236, type: 'EDEN' },
+    { id: '130-4', minLv: 130, name: '汙水處理廠', baseExp: 3371724, type: 'EDEN' },
+    { id: '130-5', minLv: 130, name: '第一魔力發電廠', baseExp: 3690278, type: 'EDEN' },
+    { id: '130-6', minLv: 130, name: '龍巢穴二樓', baseExp: 2221458, type: 'EDEN' },
+    // 140 Zone (Eden)
+    { id: '140-1', minLv: 140, name: '彩虹橋高塔', baseExp: 5880330, type: 'EDEN' },
+    { id: '140-2', minLv: 140, name: '龍巢穴三樓', baseExp: 7784640, type: 'EDEN' },
+    { id: '140-3', minLv: 140, name: '普隆德拉地下監獄', baseExp: 6048000, type: 'EDEN' },
+    { id: '140-4', minLv: 140, name: '被入侵的普隆德拉', baseExp: 7168560, type: 'EDEN' },
+    { id: '140-5', minLv: 140, name: '洛克里奇岩嶺礦山', baseExp: 6309864, type: 'EDEN' },
+    // 150 Zone (Eden)
+    { id: '150-1', minLv: 150, name: '二樓迴廊', baseExp: 12185610, type: 'EDEN' },
+    { id: '150-2', minLv: 150, name: '地下碉堡', baseExp: 2517318, type: 'EDEN' },
+    { id: '150-3', minLv: 150, name: '實驗洞-OPTATIO', baseExp: 2290500, type: 'EDEN' },
+    { id: '150-4', minLv: 150, name: '時間扭曲的鐘塔二樓', baseExp: 3943016, type: 'EDEN' },
+    { id: '150-5', minLv: 150, name: '飼養場-失落的山谷', baseExp: 50858394, type: 'EDEN' },
+    // 160 Zone (Eden)
+    { id: '160-1', minLv: 160, name: '時間扭曲的鐘塔三樓', baseExp: 15026000, type: 'EDEN' },
+    { id: '160-2', minLv: 160, name: '歐茲平原和伊達平原', baseExp: 27733536, type: 'EDEN' },
+    { id: '160-3', minLv: 160, name: '實驗體廢棄場魯杜斯二樓', baseExp: 27206928, type: 'EDEN' },
+    { id: '160-4', minLv: 160, name: '優佩雷斯東邊廢墟', baseExp: 42514200, type: 'EDEN' },
+    { id: '160-5', minLv: 160, name: '貝魯茲城', baseExp: 24432320, type: 'EDEN' },
+    // 170 Zone (Eden)
+    { id: '170-1', minLv: 170, name: '塔耳塔羅斯儲藏室上層', baseExp: 89909066, type: 'EDEN' },
+    { id: '170-2', minLv: 170, name: '歐茲迷宮一樓', baseExp: 57464080, type: 'EDEN' },
+    { id: '170-3', minLv: 170, name: '實驗體廢棄場魯杜斯三樓', baseExp: 61278560, type: 'EDEN' },
+    { id: '170-4', minLv: 170, name: '朱諾 諾可羅德三樓', baseExp: 87041946, type: 'EDEN' },
+    // 180 Zone (Eden)
+    { id: '180-1', minLv: 180, name: '塔耳塔羅斯儲藏室下層', baseExp: 67498976, type: 'EDEN' },
+    { id: '180-2', minLv: 180, name: '克雷斯特漢姆古城深淵一樓', baseExp: 71372188, type: 'EDEN' },
+    { id: '180-3', minLv: 180, name: '灰狼叢林 - 1', baseExp: 53101228, type: 'EDEN' },
+    { id: '180-4', minLv: 180, name: '灰狼叢林 - 2', baseExp: 53757440, type: 'EDEN' },
+    { id: '180-5', minLv: 180, name: '艾音貝赫礦山三樓', baseExp: 186023172, type: 'EDEN' },
+    // 190 Zone (Eden)
+    { id: '190-1', minLv: 190, name: '古代奧丁神殿', baseExp: 197765462, type: 'EDEN' },
+    { id: '190-2', minLv: 190, name: '毀葛深淵湖水地下洞穴四樓', baseExp: 159824664, type: 'EDEN' },
+    { id: '190-3', minLv: 190, name: '第二魔力發電廠', baseExp: 127950678, type: 'EDEN' },
+    
+    // --- DAILY NPC QUESTS ---
+    // Note: Provided values were "With 50% Book". Base Exp = Value / 1.5
+    { id: '180-6', minLv: 180, name: '達納托斯塔-9樓 (碎片)', baseExp: 46726830, type: 'DAILY' }, // 116817075 / 1.5
+    { id: '180-7', minLv: 180, name: '達納托斯塔-10樓 (碎片)', baseExp: 52155630, type: 'DAILY' }, // 130389075 / 1.5
+    { id: '180-8', minLv: 180, name: '達納托斯塔-11樓 (碎片)', baseExp: 68716752, type: 'DAILY' }, // 171791880 / 1.5
+    { id: '180-9', minLv: 180, name: '達納托斯塔-12樓 (碎片)', baseExp: 46104885, type: 'DAILY' }, // 115262212 / 1.5
+    { id: '180-10', minLv: 180, name: '古代奧丁神殿 (每日)', baseExp: 94400440, type: 'DAILY' }, // 236001100 / 1.5
+    { id: '180-11', minLv: 180, name: '艾音貝赫礦山三樓 (每日)', baseExp: 103980320, type: 'DAILY' }, // 259950800 / 1.5
+    { id: '190-4', minLv: 190, name: '毀葛深淵湖水地下洞穴四樓 (每日)', baseExp: 104442080, type: 'DAILY' }, // 261105200 / 1.5
 ];

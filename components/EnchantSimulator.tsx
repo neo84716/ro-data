@@ -325,7 +325,7 @@ export const EnchantSimulator: React.FC = () => {
                     <div>
                         <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
                             <Dna className="w-6 h-6 text-ro-highlight" />
-                            附魔模擬器
+                            高級附魔模擬器
                         </h2>
                         <p className="text-ro-muted text-sm">
                             支援批量附魔、目標指定自動附魔與完整紀錄。
@@ -495,9 +495,9 @@ export const EnchantSimulator: React.FC = () => {
                                             onChange={(e) => setTargets(prev => ({...prev, [slot.slotId]: e.target.value}))}
                                             className="flex-1 bg-slate-800 border border-ro-secondary rounded text-white text-xs px-2 outline-none focus:border-ro-gold"
                                         >
-                                            <option value="" className="bg-slate-800 text-white">選擇目標...</option>
+                                            <option value="" className="bg-slate-800 text-black">選擇目標...</option>
                                             {slot.options.map((opt, i) => (
-                                                <option key={i} value={opt.name} className="bg-slate-800 text-white">{opt.name} ({opt.probability}%)</option>
+                                                <option key={i} value={opt.name} className="bg-slate-800 text-black">{opt.name} ({opt.probability}%)</option>
                                             ))}
                                         </select>
                                         <button
@@ -536,10 +536,10 @@ export const EnchantSimulator: React.FC = () => {
                                 onChange={(e) => setFilterSlot(e.target.value === 'all' ? 'all' : Number(e.target.value))}
                                 className="bg-transparent text-sm text-white outline-none border-r border-ro-secondary pr-2 mr-2"
                             >
-                                <option value="all" className="bg-slate-800 text-white">所有部位</option>
-                                <option value={4} className="bg-slate-800 text-white">第4洞</option>
-                                <option value={3} className="bg-slate-800 text-white">第3洞</option>
-                                <option value={2} className="bg-slate-800 text-white">第2洞</option>
+                                <option value="all" className="bg-slate-800 text-black">所有部位</option>
+                                <option value={4} className="bg-slate-800 text-black">第4洞</option>
+                                <option value={3} className="bg-slate-800 text-black">第3洞</option>
+                                <option value={2} className="bg-slate-800 text-black">第2洞</option>
                             </select>
                             
                             <Search className="w-4 h-4 text-ro-muted mx-2" />
